@@ -5,7 +5,7 @@ author_data('Dobra','','Mihai','240912').
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Main predicates
+% Preliminary Predicates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %--------------------------------------------
@@ -105,7 +105,8 @@ is_repeated(Cs, Parte, Num):-
     Parte \== [], 
     append(Parte , Aux, Cs), 
     is_repeated(Aux, Parte, Num1), 
-    ( var(Num) -> Num is Num1 + 1;
+    ( var(Num) -> Num is Num1 + 1
+    ;
         Num > 0,
         Num is Num1 + 1
     ).
@@ -127,10 +128,231 @@ is_repeated(Cs, Parte, Num):-
 
 simple_repetition(Inicial, Comprimida):-
     Inicial \== [],
-    Inicial \== [_,_],
     split(Inicial, Parte1, _),
     is_repeated(Inicial, Parte1, Num),
     group(Parte1, Num, Comprimida).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Main Predicates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%--------------------------------------------
+% Principal predicate: compress/2
+%--------------------------------------------
+
+% @pred compress(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+
+% The implementation uses the clean_memo/0 predicate to clear the memo database,
+% and then calls the recursive_compression/2 predicate to achieve the compression.
+
+compress(Inicial, Comprimida):-
+    clean_memo,
+    recursive_compression(Inicial, Comprimida).
+
+%---------------------------------------------
+% Predicate: memo/2
+%---------------------------------------------
+
+% @pred memo(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is used to store the results of the compression in a dynamic database.
+% It is used to avoid recalculating the compression for the same input sequence.
+:- dynamic memo/2.
+
+% ---------------------------------------------
+% Predicate: clean_memo/0
+% ---------------------------------------------
+
+% @pred clean_memo
+
+% This predicate is used to clear the memo database.
+clean_memo:-
+    retractall(memo(_, _)).
+
+%---------------------------------------------
+% Predicate: recursive_compression/2
+%---------------------------------------------
+
+% @pred recursive_compression(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+% The implementation uses two clauses:
+% 1. The first clause calls the better_compression_memo/2 predicate to achieve the compression.
+% 2. The second clause is the base case, which checks if Inicial is already compressed and does not need further compression.
+
+% The predicate ! is used to cut the search space and avoid backtracking after finding the first solution. (Green cut)
+
+recursive_compression(Inicial, Comprimida):-
+    better_compression_memo(Inicial, Comprimida), !.
+recursive_compression(Inicial, Inicial).
+
+%---------------------------------------------
+% Predicate: better_compression_memo/2
+%---------------------------------------------
+
+% @pred better_compression_memo(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicates is true if Comprimida is the compressed sequence of Inicial.
+% The implementations uses two clauses:
+% 1. The first clause checks if the result is already in the memo database.
+% 2. The second clause checks if the result is not in the memo database, and then calculates it using the better_compression/2 predicate.
+% It then asserts the result in the memo database for future use.
+
+% The predicate assert/1 is used to add the result to the memo database.
+% The predicate ! is used to cut the search space and avoid backtracking after finding the first solution. (Green cut)
+
+better_compression_memo(Inicial, Comprimida):-
+    memo(Inicial, Comprimida),
+    !.
+better_compression_memo(Inicial, Comprimida):-
+    better_compression(Inicial, Comprimida),
+    assert(memo(Inicial, Comprimida)).
+
+%----------------------------------------------
+% Predicate: better_compression/2
+%---------------------------------------------
+
+% @pred better_compression(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+
+% The implementation uses the findall/3 predicate to find all possible compressions of Inicial.
+% It then uses the min_list/2 predicate to find the minimum length compression from the list of compressions.
+% The predicate length/2 is used to check the length of Inicial and Comprimida.
+% Finally, Comprimida is unified with the minimum length compression if it is smaller than Inicial, otherwise it is unified with Inicial.
+
+better_compression(Inicial, Comprimida):-
+    findall(Comprimida, compression(Inicial, Comprimida), Lista),
+    min_list(Lista, Posible_Comprimida),
+    length(Inicial, L1),
+    length(Posible_Comprimida, L2),
+    (   L1 > L2 ->
+        Comprimida = Posible_Comprimida
+    ;
+        Comprimida = Inicial
+    ).
+
+%---------------------------------------------
+% Predicate: compression/2
+%---------------------------------------------
+
+% @pred compression(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+% The implementation uses two clauses:
+% 1. The first clause call the repetition/2 predicate to check if Inicial is a repeated sequence and compress it.
+% 2. The second clause call the division/2 predicate to check if Inicial can be divided into two parts and compress them separately.
+
+compression(Inicial, Comprimida):-
+    repetition(Inicial, Comprimida).
+compression(Inicial, Comprimida):-
+    division(Inicial, Comprimida).
+
+%---------------------------------------------
+% Predicate: repetition/2
+%---------------------------------------------
+
+% @pred repetition(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+
+% The implementation uses the split/3 predicate to split Inicial into two parts, but only uses Parte1.
+% It then checks if Parte1 is a repetition of Inicial using the is_repeated/3 predicate.
+% Then use recursive_compression/2 to compress Parte1 and group/3 to group the repetitions.
+
+repetition(Inicial, Comprimida):-
+    Inicial \== [],
+    split(Inicial, Parte1, _),
+    is_repeated(Inicial, Parte1, Num),
+    Num > 1,
+    recursive_compression(Parte1, Precomprimida),
+    group(Precomprimida, Num, Comprimida).
+
+%---------------------------------------------
+% Predicate: division/2
+%---------------------------------------------
+
+% @pred division(Inicial, Comprimida)
+% @arg Inicial: the sequence to compress
+% @arg Comprimida: the compressed sequence
+
+% This predicate is true if Comprimida is the compressed sequence of Inicial.
+
+% The implementation uses the split/3 predicate to split Inicial into two parts, Parte1 and Parte2.
+% It then calls the recursive_compression/2 predicate to compress both parts separately.
+% If either part is compressed, it appends the two compressed parts to form Comprimida using the append/3 predicate.
+
+division(Inicial, Comprimida):-
+    Inicial \== [],
+    split(Inicial, Parte1, Parte2),
+    recursive_compression(Parte1, Precomprimida1),
+    recursive_compression(Parte2, Precomprimida2),
+    ( Precomprimida1 \== Parte1 ; Precomprimida2 \== Parte2 ),
+    append(Precomprimida1, Precomprimida2, Comprimida).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% AUXILIARY PREDICATES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%---------------------------------------------
+% Predicate: min_list/2
+%---------------------------------------------
+
+% @pred min_list(Lista, Min)
+% @arg Lista: the list of sequences
+% @arg Min: the minimum sequence in the list
+
+% This predicate is true if Min is the minimum sequence in the list Lista.
+
+% The implementation uses the length/2 predicate to check the length of the first sequence in the list.
+% It then calls the min_list_aux/4 predicate to find the minimum sequence in the list.
+
+min_list([H|T], Min):-
+    length(H, L1),
+    min_list_aux(T, H, L1, Min).
+
+%---------------------------------------------
+% Predicate: min_list_aux/4
+%---------------------------------------------
+
+% @pred min_list_aux(Lista, Min_Actual, L, Min_Final)
+% @arg Lista: the list of sequences
+% @arg Min_Actual: the current minimum sequence
+% @arg L: the length of the current minimum sequence
+% @arg Min_Final: the final minimum sequence
+
+% This predicate is true if Min_Final is the minimum sequence in the list Lista.
+% The implementation uses tail recursion with two clauses:
+% 1. The first clause is the base case, which checks if the list is empty and unifies Min_Final with Min_Actual.
+% 2. The second clause checks if the list is not empty and compares the length of the current sequence with the length of Min_Actual.
+% If the length of the current sequence is less than L, it updates Min_Actual with the current sequence and calls itself recursively,
+% otherwise it continues with the current minimum sequence.
+
+min_list_aux([], Min_Actual, _, Min_Actual).
+min_list_aux([H|T], Min_Actual, L, Min_Final):-    
+    length(H, L2),
+    ( L2 < L ->
+        min_list_aux(T, H, L2, Min_Final)
+    ;
+        min_list_aux(T, Min_Actual, L, Min_Final)
+    ).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Tests
@@ -207,3 +429,19 @@ simple_repetition(Inicial, Comprimida):-
 :- test simple_repetition(Inicial, Comprimida) : (Inicial = [a,a,a,b,b,b]) + fails.
 % Test if Inicial is not a repeated sequence
 :- test simple_repetition(Inicial, Comprimida) : (Inicial = [a,b,c,d,e]) + fails.
+
+%---------------------------------------------
+% Test for repetition/2 (the same as simple_repetition/2)
+%---------------------------------------------
+
+% Test if Comprimida is a repetition of Inicial for 4 times
+:- test repetition(Inicial, Comprimida) : (Inicial = [a,a,a,a]) => (Comprimida = [a,4]; Comprimida = ['<',a,a,'>',2]) + not_fails.
+% Test if Comprimida is a repetition of Inicial, with multiple elements, for 3 times
+:- test repetition(Inicial, Comprimida) : (Inicial = [x,y,x,y,x,y]) => (Comprimida = ['<',x,y,'>',3]) + not_fails.
+% Test if Inicial is empty fails
+:- test repetition(Inicial, Comprimida) : (Inicial = []) + fails.
+% Test if Inicial is not a repeated sequence
+:- test repetition(Inicial, Comprimida) : (Inicial = [a,a,a,b,b,b]) + fails.
+% Test if Inicial is not a repeated sequence
+:- test repetition(Inicial, Comprimida) : (Inicial = [a,b,c,d,e]) + fails.
+
