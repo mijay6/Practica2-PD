@@ -133,7 +133,7 @@ simple_repetition(Inicial, Comprimida):-
     group(Parte1, Num, Comprimida).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Main Predicates
+% Main Compression Predicates
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %--------------------------------------------
@@ -306,6 +306,28 @@ division(Inicial, Comprimida):-
     ( Precomprimida1 \== Parte1 ; Precomprimida2 \== Parte2 ),
     append(Precomprimida1, Precomprimida2, Comprimida).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Main Decompression Predicates
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%---------------------------------------------
+% Principal predicate: decompress/2
+%---------------------------------------------
+
+% @pred decompress(Comprimida, Descomprimida)
+% @arg Comprimida: the compressed sequence
+% @arg Descomprimida: the decompressed sequence
+
+% This predicate is true if Descomprimida is the decompressed sequence of Comprimida.
+
+% Implementar un predicado decompress(Comprimida, Descomprimida) tal que
+% Descomprimida sea la secuencia que resulta de descomprimir Comprimida. Comprimida
+% puede también contener secuencias sólo parcialmente comprimidas(p.ej.,[a,a,a,b,3),
+%  o no comprimidas (p.ej., [a,a,a,b,b,b]).
+
+% decompress(Comprimida) :-
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % AUXILIARY PREDICATES
@@ -445,3 +467,36 @@ min_list_aux([H|T], Min_Actual, L, Min_Final):-
 % Test if Inicial is not a repeated sequence
 :- test repetition(Inicial, Comprimida) : (Inicial = [a,b,c,d,e]) + fails.
 
+%---------------------------------------------
+% Test for compress/2
+%---------------------------------------------
+
+% Test if Comprimida is the compressed sequence of Inicial
+:- test compress(Inicial, Comprimida) : (Inicial = [a,a,a,a]) => (Comprimida = [a,4]) + not_fails.
+% Test if Comprimida is the compressed sequence of Inicial, with multiple elements
+:- test compress(Inicial, Comprimida) : (Inicial = [x,y,x,y,x,y]) => (Comprimida = ['<',x,y,'>',3]) + not_fails.
+% Test if Comprimida is the compressed sequence of Inicial, with multiple elements
+:- test compress(Inicial, Comprimida) : (Inicial = [a,a,b,b,b]) => (Comprimida = [a,a,b,3]) + not_fails.
+% Test if Comprimida is the compressed sequence of Inicial, with multiple elements
+:- test compress(Inicial, Comprimida) : (Inicial = [a,b,c,d,d,d,e,f]) => (Comprimida = [a,b,c,d,3,e,f]) + not_fails.
+% Test if a sequence with no repetitions is not compressed
+:- test compress(Inicial, Comprimida) : (Inicial = [a,b,c,d,e]) => (Comprimida = [a,b,c,d,e]) + not_fails.
+% Test if an empty sequence is not compressed
+:- test compress(Inicial, Comprimida) : (Inicial = []) => (Comprimida = []) + not_fails.
+% Test if Comprimida is the compressed sequence of Inicial, with multiple elements
+:- test compress(Inicial, Comprimida) : (Inicial = [a,b,b,b,b,a,b,b,b,b]) => (Comprimida = [<,a,b,4,>,2]) + not_fails.
+% Test if Comprimida is the compressed sequence of Inicial, with multiple elements
+:- test compress(Inicial, Comprimida) : (Inicial = [a,a,b,b,a,a,b,b,a,a,b,b,c]) => (Comprimida = [<,a,a,b,b,>,3,c]) + not_fails.
+
+%----------------------------------------------
+% Test for min_list/2
+%----------------------------------------------
+
+% Test if Min is the minimum sequence in the list
+:- test min_list(Lista, Min) : (Lista = [[a,b,c],[a,b],[a,b,a,b]]) => (Min = [a,b]) + not_fails.
+% Test if Min is the minimum sequence in the list
+:- test min_list(Lista, Min) : (Lista = [[a,b,c],[a],[a,b],[a]]) => (Min = [a]) + not_fails.
+% Test if Lista is a list with one element
+:- test min_list(Lista, Min) : (Lista = [[a,b,c]]) => (Min = [a,b,c]) + not_fails.
+% Test if Lista is empty
+:- test min_list(Lista, Min) : (Lista = []) + fails.
