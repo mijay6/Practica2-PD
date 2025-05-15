@@ -1,0 +1,425 @@
+filetype(module).
+main_title([[string_esc("Práctica 2: ISO-Prolog")]]).
+sect([level(0)],global_label("Práctica 2: ISO-Prolog"),[string_esc("Práctica 2: ISO-Prolog")]).
+refs_link(codefulltoc).
+sect([level(2)],local_label("Introducción"),[string_esc("Introducción")]).
+sect([level(2)],local_label("Representación de datos"),[string_esc("Representación de datos")]).
+sect([level(2)],local_label("Funcionalidades"),[string_esc("Funcionalidades")]).
+sect([level(2)],local_label("Ejemplos de uso"),[string_esc("Ejemplos de uso")]).
+sect([level(2)],local_label("Usage and interface"),string_esc("Usage and interface")).
+idx(use,code,localnum_label("0"),"author_data/4").
+idx(use,code,localnum_label("1"),"split/3").
+idx(use,code,localnum_label("2"),"group/3").
+idx(use,code,localnum_label("3"),"is_repeated/3").
+idx(use,code,localnum_label("4"),"simple_repetition/2").
+idx(use,code,localnum_label("5"),"compress/2").
+idx(use,code,localnum_label("6"),"memo/2").
+idx(use,code,localnum_label("7"),"clean_memo/0").
+idx(use,code,localnum_label("8"),"recursive_compression/2").
+idx(use,code,localnum_label("9"),"better_compression_memo/2").
+idx(use,code,localnum_label("10"),"better_compression/2").
+idx(use,code,localnum_label("11"),"compression/2").
+idx(use,code,localnum_label("12"),"repetition/2").
+idx(use,code,localnum_label("13"),"division/2").
+idx(use,code,localnum_label("14"),"decompress/2").
+idx(use,code,localnum_label("15"),"extract_group/4").
+idx(use,code,localnum_label("16"),"min_list/2").
+idx(use,code,localnum_label("17"),"min_list_aux/4").
+idx(use,code,localnum_label("18"),"expand_sequence/3").
+idx(use,code,localnum_label("19"),[6,99,97,108,108,95,105,110,95,109,111,100,117,108,101,47,50]).
+sect([level(2)],local_label("Documentation on exports"),string_esc("Documentation on exports")).
+idx(def,pred,local_label("author_data/4"),"author_data/4").
+idx(def,pred,local_label("split/3"),"split/3").
+idx(use,prop,localnum_label("20"),"list/1").
+idx(use,prop,localnum_label("21"),"list/1").
+idx(use,prop,localnum_label("22"),"list/1").
+idx(use,prop,localnum_label("23"),"Todo=[1,2,3,4,5]").
+idx(use,prop,localnum_label("24"),"= /2").
+idx(use,prop,localnum_label("25"),"Parte1=[1,2]").
+idx(use,prop,localnum_label("26"),"= /2").
+idx(use,prop,localnum_label("27"),"Parte2=[3,4,5]").
+idx(use,prop,localnum_label("28"),"= /2").
+idx(use,prop,localnum_label("29"),"not_fails/1").
+idx(use,prop,localnum_label("30"),"Todo=[a,b,c]").
+idx(use,prop,localnum_label("31"),"= /2").
+idx(use,prop,localnum_label("32"),"Parte1=[a]").
+idx(use,prop,localnum_label("33"),"= /2").
+idx(use,prop,localnum_label("34"),"Parte2=[b,c]").
+idx(use,prop,localnum_label("35"),"= /2").
+idx(use,prop,localnum_label("36"),"not_fails/1").
+idx(use,prop,localnum_label("37"),"Todo=[a]").
+idx(use,prop,localnum_label("38"),"= /2").
+idx(use,prop,localnum_label("39"),"fails/1").
+idx(use,prop,localnum_label("40"),"Todo=[]").
+idx(use,prop,localnum_label("41"),"= /2").
+idx(use,prop,localnum_label("42"),"fails/1").
+idx(use,prop,localnum_label("43"),"Todo=[1,2,3,4,5]").
+idx(use,prop,localnum_label("44"),"= /2").
+idx(use,prop,localnum_label("45"),"Parte1=[]").
+idx(use,prop,localnum_label("46"),"= /2").
+idx(use,prop,localnum_label("47"),"Parte2=[1,2,3,4,5]").
+idx(use,prop,localnum_label("48"),"= /2").
+idx(use,prop,localnum_label("49"),"fails/1").
+idx(use,prop,localnum_label("50"),"Todo=[1,2,3,4,5]").
+idx(use,prop,localnum_label("51"),"= /2").
+idx(use,prop,localnum_label("52"),"Parte1=[1,2,3,4,5]").
+idx(use,prop,localnum_label("53"),"= /2").
+idx(use,prop,localnum_label("54"),"Parte2=[]").
+idx(use,prop,localnum_label("55"),"= /2").
+idx(use,prop,localnum_label("56"),"fails/1").
+idx(def,pred,local_label("group/3"),"group/3").
+idx(use,prop,localnum_label("57"),"list/1").
+idx(use,prop,localnum_label("58"),"integer/1").
+idx(use,prop,localnum_label("59"),"list/1").
+idx(use,prop,localnum_label("60"),"Parte=[a,b,c,d,e]").
+idx(use,prop,localnum_label("61"),"= /2").
+idx(use,prop,localnum_label("62"),"Num=3").
+idx(use,prop,localnum_label("63"),"= /2").
+idx(use,prop,localnum_label("64"),"Grupo=[&lt;,a,b,c,d,e,&gt;,3]").
+idx(use,prop,localnum_label("65"),"= /2").
+idx(use,prop,localnum_label("66"),"not_fails/1").
+idx(use,prop,localnum_label("67"),"Parte=[a,b]").
+idx(use,prop,localnum_label("68"),"= /2").
+idx(use,prop,localnum_label("69"),"Num=2").
+idx(use,prop,localnum_label("70"),"= /2").
+idx(use,prop,localnum_label("71"),"Grupo=[&lt;,a,b,&gt;,2]").
+idx(use,prop,localnum_label("72"),"= /2").
+idx(use,prop,localnum_label("73"),"not_fails/1").
+idx(use,prop,localnum_label("74"),"Parte=[z]").
+idx(use,prop,localnum_label("75"),"= /2").
+idx(use,prop,localnum_label("76"),"Num=5").
+idx(use,prop,localnum_label("77"),"= /2").
+idx(use,prop,localnum_label("78"),"Grupo=[z,5]").
+idx(use,prop,localnum_label("79"),"= /2").
+idx(use,prop,localnum_label("80"),"not_fails/1").
+idx(use,prop,localnum_label("81"),"Parte=[]").
+idx(use,prop,localnum_label("82"),"= /2").
+idx(use,prop,localnum_label("83"),"Num=5").
+idx(use,prop,localnum_label("84"),"= /2").
+idx(use,prop,localnum_label("85"),"Grupo=[5]").
+idx(use,prop,localnum_label("86"),"= /2").
+idx(use,prop,localnum_label("87"),"not_fails/1").
+idx(use,prop,localnum_label("88"),"Parte=[a,b,c]").
+idx(use,prop,localnum_label("89"),"= /2").
+idx(use,prop,localnum_label("90"),"Num=0").
+idx(use,prop,localnum_label("91"),"= /2").
+idx(use,prop,localnum_label("92"),"fails/1").
+idx(use,prop,localnum_label("93"),"Parte=[a,b,c]").
+idx(use,prop,localnum_label("94"),"= /2").
+idx(use,prop,localnum_label("95"),"Num=not_a_number").
+idx(use,prop,localnum_label("96"),"= /2").
+idx(use,prop,localnum_label("97"),"fails/1").
+idx(use,prop,localnum_label("98"),"Parte=not_a_list").
+idx(use,prop,localnum_label("99"),"= /2").
+idx(use,prop,localnum_label("100"),"Num=3").
+idx(use,prop,localnum_label("101"),"= /2").
+idx(use,prop,localnum_label("102"),"fails/1").
+idx(use,prop,localnum_label("103"),"Num=3").
+idx(use,prop,localnum_label("104"),"= /2").
+idx(use,prop,localnum_label("105"),"Grupo=[&lt;,a,b,c,d,e,&gt;,3]").
+idx(use,prop,localnum_label("106"),"= /2").
+idx(use,prop,localnum_label("107"),"Parte=[a,b,c,d,e]").
+idx(use,prop,localnum_label("108"),"= /2").
+idx(use,prop,localnum_label("109"),"not_fails/1").
+idx(use,prop,localnum_label("110"),"Num=3").
+idx(use,prop,localnum_label("111"),"= /2").
+idx(use,prop,localnum_label("112"),"Grupo=[&lt;,a,b,c,d,e,&gt;,2]").
+idx(use,prop,localnum_label("113"),"= /2").
+idx(use,prop,localnum_label("114"),"fails/1").
+idx(def,pred,local_label("is_repeated/3"),"is_repeated/3").
+idx(use,prop,localnum_label("115"),"list/1").
+idx(use,prop,localnum_label("116"),"list/1").
+idx(use,prop,localnum_label("117"),"integer/1").
+idx(use,prop,localnum_label("118"),"Cs=[a,b,a,b,a,b]").
+idx(use,prop,localnum_label("119"),"= /2").
+idx(use,prop,localnum_label("120"),"Parte=[a,b]").
+idx(use,prop,localnum_label("121"),"= /2").
+idx(use,prop,localnum_label("122"),"Num=3").
+idx(use,prop,localnum_label("123"),"= /2").
+idx(use,prop,localnum_label("124"),"not_fails/1").
+idx(use,prop,localnum_label("125"),"Cs=[]").
+idx(use,prop,localnum_label("126"),"= /2").
+idx(use,prop,localnum_label("127"),"Parte=[a,b,c]").
+idx(use,prop,localnum_label("128"),"= /2").
+idx(use,prop,localnum_label("129"),"Num=0").
+idx(use,prop,localnum_label("130"),"= /2").
+idx(use,prop,localnum_label("131"),"not_fails/1").
+idx(use,prop,localnum_label("132"),"Cs=[]").
+idx(use,prop,localnum_label("133"),"= /2").
+idx(use,prop,localnum_label("134"),"Parte=[]").
+idx(use,prop,localnum_label("135"),"= /2").
+idx(use,prop,localnum_label("136"),"Num=0").
+idx(use,prop,localnum_label("137"),"= /2").
+idx(use,prop,localnum_label("138"),"not_fails/1").
+idx(use,prop,localnum_label("139"),"Cs=[a,b,c]").
+idx(use,prop,localnum_label("140"),"= /2").
+idx(use,prop,localnum_label("141"),"Parte=[a,b]").
+idx(use,prop,localnum_label("142"),"= /2").
+idx(use,prop,localnum_label("143"),"fails/1").
+idx(use,prop,localnum_label("144"),"Cs=[a,b]").
+idx(use,prop,localnum_label("145"),"= /2").
+idx(use,prop,localnum_label("146"),"Parte=[a,b,c]").
+idx(use,prop,localnum_label("147"),"= /2").
+idx(use,prop,localnum_label("148"),"fails/1").
+idx(use,prop,localnum_label("149"),"Cs=[a,a,a]").
+idx(use,prop,localnum_label("150"),"= /2").
+idx(use,prop,localnum_label("151"),"Parte=[a]").
+idx(use,prop,localnum_label("152"),"= /2").
+idx(use,prop,localnum_label("153"),"Num=0").
+idx(use,prop,localnum_label("154"),"= /2").
+idx(use,prop,localnum_label("155"),"fails/1").
+idx(def,pred,local_label("simple_repetition/2"),"simple_repetition/2").
+idx(use,pred,localnum_label("156"),"group/3").
+idx(use,prop,localnum_label("157"),"list/1").
+idx(use,prop,localnum_label("158"),"list/1").
+idx(use,prop,localnum_label("159"),"Inicial=[a,a,a,a]").
+idx(use,prop,localnum_label("160"),"= /2").
+idx(use,prop,localnum_label("161"),"member/2").
+idx(use,prop,localnum_label("162"),"not_fails/1").
+idx(use,prop,localnum_label("163"),"Inicial=[x,y,x,y,x,y]").
+idx(use,prop,localnum_label("164"),"= /2").
+idx(use,prop,localnum_label("165"),"Comprimida=[&lt;,x,y,&gt;,3]").
+idx(use,prop,localnum_label("166"),"= /2").
+idx(use,prop,localnum_label("167"),"not_fails/1").
+idx(use,prop,localnum_label("168"),"Inicial=[]").
+idx(use,prop,localnum_label("169"),"= /2").
+idx(use,prop,localnum_label("170"),"fails/1").
+idx(use,prop,localnum_label("171"),"Inicial=[a,a,a,b,b,b]").
+idx(use,prop,localnum_label("172"),"= /2").
+idx(use,prop,localnum_label("173"),"fails/1").
+idx(use,prop,localnum_label("174"),"Inicial=[a,b,c,d,e]").
+idx(use,prop,localnum_label("175"),"= /2").
+idx(use,prop,localnum_label("176"),"fails/1").
+idx(def,pred,local_label("compress/2"),"compress/2").
+idx(use,prop,localnum_label("177"),"list/1").
+idx(use,prop,localnum_label("178"),"list/1").
+idx(use,prop,localnum_label("179"),"Inicial=[a,a,a,a]").
+idx(use,prop,localnum_label("180"),"= /2").
+idx(use,prop,localnum_label("181"),"Comprimida=[a,4]").
+idx(use,prop,localnum_label("182"),"= /2").
+idx(use,prop,localnum_label("183"),"not_fails/1").
+idx(use,prop,localnum_label("184"),"Inicial=[x,y,x,y,x,y]").
+idx(use,prop,localnum_label("185"),"= /2").
+idx(use,prop,localnum_label("186"),"Comprimida=[&lt;,x,y,&gt;,3]").
+idx(use,prop,localnum_label("187"),"= /2").
+idx(use,prop,localnum_label("188"),"not_fails/1").
+idx(use,prop,localnum_label("189"),"Inicial=[a,a,b,b,b]").
+idx(use,prop,localnum_label("190"),"= /2").
+idx(use,prop,localnum_label("191"),"Comprimida=[a,a,b,3]").
+idx(use,prop,localnum_label("192"),"= /2").
+idx(use,prop,localnum_label("193"),"not_fails/1").
+idx(use,prop,localnum_label("194"),"Inicial=[a,b,c,d,d,d,e,f]").
+idx(use,prop,localnum_label("195"),"= /2").
+idx(use,prop,localnum_label("196"),"Comprimida=[a,b,c,d,3,e,f]").
+idx(use,prop,localnum_label("197"),"= /2").
+idx(use,prop,localnum_label("198"),"not_fails/1").
+idx(use,prop,localnum_label("199"),"Inicial=[a,b,c,d,e]").
+idx(use,prop,localnum_label("200"),"= /2").
+idx(use,prop,localnum_label("201"),"Comprimida=[a,b,c,d,e]").
+idx(use,prop,localnum_label("202"),"= /2").
+idx(use,prop,localnum_label("203"),"not_fails/1").
+idx(use,prop,localnum_label("204"),"Inicial=[]").
+idx(use,prop,localnum_label("205"),"= /2").
+idx(use,prop,localnum_label("206"),"Comprimida=[]").
+idx(use,prop,localnum_label("207"),"= /2").
+idx(use,prop,localnum_label("208"),"not_fails/1").
+idx(use,prop,localnum_label("209"),"Inicial=[a,b,b,b,b,a,b,b,b,b]").
+idx(use,prop,localnum_label("210"),"= /2").
+idx(use,prop,localnum_label("211"),"Comprimida=[&lt;,a,b,4,&gt;,2]").
+idx(use,prop,localnum_label("212"),"= /2").
+idx(use,prop,localnum_label("213"),"not_fails/1").
+idx(use,prop,localnum_label("214"),"Inicial=[a,a,b,b,a,a,b,b,a,a,b,b,c]").
+idx(use,prop,localnum_label("215"),"= /2").
+idx(use,prop,localnum_label("216"),"Comprimida=[&lt;,a,a,b,b,&gt;,3,c]").
+idx(use,prop,localnum_label("217"),"= /2").
+idx(use,prop,localnum_label("218"),"not_fails/1").
+idx(def,pred,local_label("memo/2"),"memo/2").
+idx(use,prop,localnum_label("219"),"list/1").
+idx(use,prop,localnum_label("220"),"list/1").
+idx(def,pred,local_label("clean_memo/0"),"clean_memo/0").
+idx(use,pred,localnum_label("221"),"memo/2").
+idx(def,pred,local_label("recursive_compression/2"),"recursive_compression/2").
+idx(use,pred,localnum_label("222"),"better_compression_memo/2").
+idx(use,prop,localnum_label("223"),"list/1").
+idx(use,prop,localnum_label("224"),"list/1").
+idx(def,pred,local_label("better_compression_memo/2"),"better_compression_memo/2").
+idx(use,pred,localnum_label("225"),"better_compression/2").
+idx(use,pred,localnum_label("226"),"memo/2").
+idx(use,pred,localnum_label("227"),"better_compression/2").
+idx(use,pred,localnum_label("228"),"memo/2").
+idx(use,prop,localnum_label("229"),"list/1").
+idx(use,prop,localnum_label("230"),"list/1").
+idx(def,pred,local_label("better_compression/2"),"better_compression/2").
+idx(use,pred,localnum_label("231"),"compression/2").
+idx(use,prop,localnum_label("232"),"list/1").
+idx(use,prop,localnum_label("233"),"list/1").
+idx(def,pred,local_label("compression/2"),"compression/2").
+idx(use,pred,localnum_label("234"),"repetition/2").
+idx(use,pred,localnum_label("235"),"division/2").
+idx(use,prop,localnum_label("236"),"list/1").
+idx(use,prop,localnum_label("237"),"list/1").
+idx(def,pred,local_label("repetition/2"),"repetition/2").
+idx(use,prop,localnum_label("238"),"list/1").
+idx(use,prop,localnum_label("239"),"list/1").
+idx(use,prop,localnum_label("240"),"Inicial=[a,a,a,a]").
+idx(use,prop,localnum_label("241"),"= /2").
+idx(use,prop,localnum_label("242"),"member/2").
+idx(use,prop,localnum_label("243"),"not_fails/1").
+idx(use,prop,localnum_label("244"),"Inicial=[x,y,x,y,x,y]").
+idx(use,prop,localnum_label("245"),"= /2").
+idx(use,prop,localnum_label("246"),"Comprimida=[&lt;,x,y,&gt;,3]").
+idx(use,prop,localnum_label("247"),"= /2").
+idx(use,prop,localnum_label("248"),"not_fails/1").
+idx(use,prop,localnum_label("249"),"Inicial=[]").
+idx(use,prop,localnum_label("250"),"= /2").
+idx(use,prop,localnum_label("251"),"fails/1").
+idx(use,prop,localnum_label("252"),"Inicial=[a,a,a,b,b,b]").
+idx(use,prop,localnum_label("253"),"= /2").
+idx(use,prop,localnum_label("254"),"fails/1").
+idx(use,prop,localnum_label("255"),"Inicial=[a,b,c,d,e]").
+idx(use,prop,localnum_label("256"),"= /2").
+idx(use,prop,localnum_label("257"),"fails/1").
+idx(def,pred,local_label("division/2"),"division/2").
+idx(use,prop,localnum_label("258"),"list/1").
+idx(use,prop,localnum_label("259"),"list/1").
+idx(def,pred,local_label("decompress/2"),"decompress/2").
+idx(use,prop,localnum_label("260"),"list/1").
+idx(use,prop,localnum_label("261"),"list/1").
+idx(use,prop,localnum_label("262"),"Comprimida=[a,4]").
+idx(use,prop,localnum_label("263"),"= /2").
+idx(use,prop,localnum_label("264"),"Descomprimida=[a,a,a,a]").
+idx(use,prop,localnum_label("265"),"= /2").
+idx(use,prop,localnum_label("266"),"not_fails/1").
+idx(use,prop,localnum_label("267"),"Comprimida=[&lt;,x,y,&gt;,3]").
+idx(use,prop,localnum_label("268"),"= /2").
+idx(use,prop,localnum_label("269"),"Descomprimida=[x,y,x,y,x,y]").
+idx(use,prop,localnum_label("270"),"= /2").
+idx(use,prop,localnum_label("271"),"not_fails/1").
+idx(use,prop,localnum_label("272"),"Comprimida=[a,a,b,3]").
+idx(use,prop,localnum_label("273"),"= /2").
+idx(use,prop,localnum_label("274"),"Descomprimida=[a,a,b,b,b]").
+idx(use,prop,localnum_label("275"),"= /2").
+idx(use,prop,localnum_label("276"),"not_fails/1").
+idx(use,prop,localnum_label("277"),"Comprimida=[a,b,c,d,3,e,f]").
+idx(use,prop,localnum_label("278"),"= /2").
+idx(use,prop,localnum_label("279"),"Descomprimida=[a,b,c,d,d,d,e,f]").
+idx(use,prop,localnum_label("280"),"= /2").
+idx(use,prop,localnum_label("281"),"not_fails/1").
+idx(use,prop,localnum_label("282"),"Comprimida=[a,b,c,d,e]").
+idx(use,prop,localnum_label("283"),"= /2").
+idx(use,prop,localnum_label("284"),"Descomprimida=[a,b,c,d,e]").
+idx(use,prop,localnum_label("285"),"= /2").
+idx(use,prop,localnum_label("286"),"not_fails/1").
+idx(use,prop,localnum_label("287"),"Comprimida=[]").
+idx(use,prop,localnum_label("288"),"= /2").
+idx(use,prop,localnum_label("289"),"Descomprimida=[]").
+idx(use,prop,localnum_label("290"),"= /2").
+idx(use,prop,localnum_label("291"),"not_fails/1").
+idx(use,prop,localnum_label("292"),"Comprimida=[&lt;,a,b,4,&gt;,2]").
+idx(use,prop,localnum_label("293"),"= /2").
+idx(use,prop,localnum_label("294"),"Descomprimida=[a,b,b,b,b,a,b,b,b,b]").
+idx(use,prop,localnum_label("295"),"= /2").
+idx(use,prop,localnum_label("296"),"not_fails/1").
+idx(use,prop,localnum_label("297"),"Comprimida=[&lt;,a,a,b,b,&gt;,3,c]").
+idx(use,prop,localnum_label("298"),"= /2").
+idx(use,prop,localnum_label("299"),"Descomprimida=[a,a,b,b,a,a,b,b,a,a,b,b,c]").
+idx(use,prop,localnum_label("300"),"= /2").
+idx(use,prop,localnum_label("301"),"not_fails/1").
+idx(use,prop,localnum_label("302"),"Comprimida=[a,a,a,b,3]").
+idx(use,prop,localnum_label("303"),"= /2").
+idx(use,prop,localnum_label("304"),"Descomprimida=[a,a,a,b,b,b]").
+idx(use,prop,localnum_label("305"),"= /2").
+idx(use,prop,localnum_label("306"),"not_fails/1").
+idx(def,pred,local_label("extract_group/4"),"extract_group/4").
+idx(use,pred,localnum_label("307"),"decompress/2").
+idx(use,prop,localnum_label("308"),"list/1").
+idx(use,prop,localnum_label("309"),"list/1").
+idx(use,prop,localnum_label("310"),"integer/1").
+idx(use,prop,localnum_label("311"),"list/1").
+idx(def,pred,local_label("min_list/2"),"min_list/2").
+idx(use,prop,localnum_label("312"),"list/2").
+idx(use,prop,localnum_label("313"),"list/1").
+idx(use,prop,localnum_label("314"),"Lista=[[a,b,c],[a,b],[a,b,a,b]]").
+idx(use,prop,localnum_label("315"),"= /2").
+idx(use,prop,localnum_label("316"),"Min=[a,b]").
+idx(use,prop,localnum_label("317"),"= /2").
+idx(use,prop,localnum_label("318"),"not_fails/1").
+idx(use,prop,localnum_label("319"),"Lista=[[a,b,c],[a],[a,b],[a]]").
+idx(use,prop,localnum_label("320"),"= /2").
+idx(use,prop,localnum_label("321"),"Min=[a]").
+idx(use,prop,localnum_label("322"),"= /2").
+idx(use,prop,localnum_label("323"),"not_fails/1").
+idx(use,prop,localnum_label("324"),"Lista=[[a,b,c]]").
+idx(use,prop,localnum_label("325"),"= /2").
+idx(use,prop,localnum_label("326"),"Min=[a,b,c]").
+idx(use,prop,localnum_label("327"),"= /2").
+idx(use,prop,localnum_label("328"),"not_fails/1").
+idx(use,prop,localnum_label("329"),"Lista=[]").
+idx(use,prop,localnum_label("330"),"= /2").
+idx(use,prop,localnum_label("331"),"fails/1").
+idx(def,pred,local_label("min_list_aux/4"),"min_list_aux/4").
+idx(use,pred,localnum_label("332"),"min_list/2").
+idx(use,pred,localnum_label("333"),"min_list/2").
+idx(use,prop,localnum_label("334"),"list/2").
+idx(use,prop,localnum_label("335"),"list/1").
+idx(use,prop,localnum_label("336"),"integer/1").
+idx(use,prop,localnum_label("337"),"list/1").
+idx(def,pred,local_label("expand_sequence/3"),"expand_sequence/3").
+idx(use,prop,localnum_label("338"),"list/1").
+idx(use,prop,localnum_label("339"),"integer/1").
+idx(use,prop,localnum_label("340"),"list/1").
+idx(use,prop,localnum_label("341"),"Secuencia=[a,b,c]").
+idx(use,prop,localnum_label("342"),"= /2").
+idx(use,prop,localnum_label("343"),"Num=3").
+idx(use,prop,localnum_label("344"),"= /2").
+idx(use,prop,localnum_label("345"),"SecuenciaExpandida=[a,b,c,a,b,c,a,b,c]").
+idx(use,prop,localnum_label("346"),"= /2").
+idx(use,prop,localnum_label("347"),"not_fails/1").
+idx(use,prop,localnum_label("348"),"Secuencia=[]").
+idx(use,prop,localnum_label("349"),"= /2").
+idx(use,prop,localnum_label("350"),"Num=0").
+idx(use,prop,localnum_label("351"),"= /2").
+idx(use,prop,localnum_label("352"),"SecuenciaExpandida=[]").
+idx(use,prop,localnum_label("353"),"= /2").
+idx(use,prop,localnum_label("354"),"not_fails/1").
+idx(use,prop,localnum_label("355"),"Secuencia=[a,b,c]").
+idx(use,prop,localnum_label("356"),"= /2").
+idx(use,prop,localnum_label("357"),"Num=0").
+idx(use,prop,localnum_label("358"),"= /2").
+idx(use,prop,localnum_label("359"),"SecuenciaExpandida=[]").
+idx(use,prop,localnum_label("360"),"= /2").
+idx(use,prop,localnum_label("361"),"not_fails/1").
+sect([level(2)],local_label("Documentation on multifiles"),string_esc("Documentation on multifiles")).
+idx(def,pred,local_label([6,99,97,108,108,95,105,110,95,109,111,100,117,108,101,47,50]),[6,99,97,108,108,95,105,110,95,109,111,100,117,108,101,47,50]).
+sect([level(2)],local_label("Documentation on imports"),string_esc("Documentation on imports")).
+idx(use,code,localnum_label("362"),"operators").
+idx(use,code,localnum_label("363"),"dcg_phrase_rt").
+idx(use,code,localnum_label("364"),"datafacts_rt").
+idx(use,code,localnum_label("365"),"dynamic_rt").
+idx(use,code,localnum_label("366"),"classic_predicates").
+idx(use,code,localnum_label("367"),"term_basic").
+idx(use,code,localnum_label("368"),"arithmetic").
+idx(use,code,localnum_label("369"),"atomic_basic").
+idx(use,code,localnum_label("370"),"basiccontrol").
+idx(use,code,localnum_label("371"),"exceptions").
+idx(use,code,localnum_label("372"),"term_compare").
+idx(use,code,localnum_label("373"),"term_typing").
+idx(use,code,localnum_label("374"),"debugger_support").
+idx(use,code,localnum_label("375"),"hiord_rt").
+idx(use,code,localnum_label("376"),"stream_basic").
+idx(use,code,localnum_label("377"),"io_basic").
+idx(use,code,localnum_label("378"),"runtime_control").
+idx(use,code,localnum_label("379"),"basic_props").
+idx(use,code,localnum_label("380"),"prelude").
+idx(use,code,localnum_label("381"),"initial").
+idx(use,code,localnum_label("382"),"condcomp").
+idx(use,code,localnum_label("383"),"classic").
+idx(use,code,localnum_label("384"),"runtime_ops").
+idx(use,code,localnum_label("385"),"dcg").
+idx(use,code,localnum_label("386"),"dcg/dcg_phrase").
+idx(use,code,localnum_label("387"),"dynamic").
+idx(use,code,localnum_label("388"),"datafacts").
+idx(use,code,localnum_label("389"),"assertions").
+idx(use,code,localnum_label("390"),"assertions/assertions_basic").
+idx(use,code,localnum_label("391"),"regtypes").
+refs_link(codesearch).

@@ -1,0 +1,732 @@
+<!DOCTYPE HTML><html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><meta name="theme-color" content="#273f79"/><link rel="stylesheet" href="lpdoc.css" type="text/css"/><script type="text/javascript" src="lpdoc.js"></script><title>Práctica 2: ISO-Prolog</title></head><body><div class="lpdoc-page fixleftbar"><a href="#" id="sidebar-toggle-button" class="lpdoc-navbutton"><span id="sidebar-button-arrow">&#9776;</span></a><div id="sidebar" class="lpdoc-sidebar"><div class="lpdoc-nav"><span class="lpdoc-on-right"><a class="lpdoc-navbutton" href="/">&#x2302;</a><span class="lpdoc-navbutton-disabled">&#x2190;</span><a class="lpdoc-navbutton" href="codefulltoc.html">&#x2192;</a><a class="lpdoc-navbutton" href="codesearch.html">&#x1F50D;</a></span><span><a href="codefulltoc.html">TOC</a></span></div><hr></hr><ul class="lpdoc-itemize-sectpath"><li><a href=""><strong>Práctica 2: ISO-Prolog</strong></a></li></ul><hr></hr><ul></ul></div><div class="lpdoc-main"><div><br/><div class="lpdoc-cover-title"><h1 class="lpdoc-cover-h1">Práctica 2: ISO-Prolog</h1></div><div class="lpdoc-cover-authors"></div><div class="lpdoc-cover-subtitle-extra"></div><div class="lpdoc-clearer"></div></div>
+<br/><br/>
+<div id="Introducción"><h2>Introducción</h2> <p>Este módulo implementa un compresor y descompresor de secuencias de caracteres. El objetivo es reducir la longitud de una secuencia representando patrones repetitivos de forma más concisa. La compresión es con pérdidas si la secuencia comprimida es más larga que la original, pero el objetivo es encontrar la representación más corta.<p></div><div id="Representación de datos"><h2>Representación de datos</h2> <p>Las secuencias son listas de Prolog. Los elementos de estas listas sin comprimir estan compuestas por caracteres.<p>Una secuencia comprimida también es una lista, pero puede contener: <ul> <li>Átomos originales. <li>Pares <tt>[Elemento, Num]</tt>, donde <tt>Elemento</tt> es un átomo y <tt>Num</tt> es el número de veces que se repite. <li>Grupos complejos <tt>[&apos;&lt;&apos;, S1, S2, ..., Sk, &apos;&gt;&apos;, Num]</tt>, donde <tt>S1...Sk</tt> es una subsecuencia (que puede estar ya comprimida o ser una mezcla de átomos y grupos simples) y <tt>Num</tt> indica cuántas veces se repite toda la subsecuencia <tt>S1...Sk</tt>. </ul> La descompresión revierte estos formatos a la secuencia original de átomos.<p></div><div id="Funcionalidades"><h2>Funcionalidades</h2> <p>El módulo implementa las siguientes funcionalidades principales:<p><ol> <li >Compresión de secuencias: Busca la representación más corta de una secuencia dada, utilizando memoización para optimizar el proceso. <li >Descompresión de secuencias: Reconstruye la secuencia original a partir de su forma comprimida. <li >Predicados auxiliares para dividir secuencias, agrupar elementos repetidos, y encontrar la compresión óptima entre varias candidatas. </ol> <p></div><div id="Ejemplos de uso"><h2>Ejemplos de uso</h2> <p>A continuación, se presenta un ejemplo de cada funcionalidad principal del módulo.<p><strong>split/3 - Dividir una secuencia:</strong> <pre class="lpdoc-codeblock">
+?- split([a,b,c], Parte1, Parte2).
+Parte1 = [a],
+Parte2 = [b, c] ? ;
+Parte1 = [a, b],
+Parte2 = [c] ? ;</pre> <p><strong>group/3 - Formar un grupo comprimido:</strong> <pre class="lpdoc-codeblock">
+?- group([a,b,c,d,e], 3, Grupo).
+Grupo = [&apos;&lt;&apos;, a, b, c, d, e, &apos;&gt;&apos;, 3]</pre> <p><strong>is_repeated/3 - Verificar si una secuencia es una repetición:</strong> <pre class="lpdoc-codeblock">
+?- is_repeated([a,b,a,b,a,b], [a,b], Num).
+Num = 3</pre> <p><strong>simple_repetition/2 - Compresión por repetición simple:</strong> <pre class="lpdoc-codeblock">
+?- simple_repetition([x,y,x,y,x,y], Comprimida).
+Comprimida = [&apos;&lt;&apos;, x, y, &apos;&gt;&apos;, 3]</pre> <p><strong>repetition/2 - Compresión por repetición (con compresión interna):</strong> <pre class="lpdoc-codeblock">
+?- repetition([a,a,a,a], Comprimida) 
+Comprimida = [a, 4] ? ; 
+Comprimida = [&apos;&lt;&apos;,a,a,&apos;&gt;&apos;,2]</pre> <p><strong>compress/2 - Compresión completa de una secuencia:</strong> <pre class="lpdoc-codeblock">
+?- compress([a,b,b,b,b,a,b,b,b,b], Comprimida).
+Comprimida = [&apos;&lt;&apos;, a, b, 4, &apos;&gt;&apos;, 2]</pre> <p><strong>min_list/2 - Encontrar la lista más corta en una lista de listas:</strong> <pre class="lpdoc-codeblock">
+?- min_list([[a,b,c],[a,b],[a,b,a,b]], Min).
+Min = [a, b]</pre> <p><strong>decompress/2 - Descompresión de una secuencia:</strong> <pre class="lpdoc-codeblock">
+?- decompress([&apos;&lt;&apos;,a,a,b,b,&apos;&gt;&apos;,3,c], Descomprimida).
+Descomprimida = [a, a, b, b, a, a, b, b, a, a, b, b, c]</pre> <p><strong>expand_sequence/3 - Expandir una secuencia repetidamente:</strong> <pre class="lpdoc-codeblock">
+?- expand_sequence([a,b,c], 3, SecuenciaExpandida).
+SecuenciaExpandida = [a, b, c, a, b, c, a, b, c]</pre></div><br/><div id="Usage and interface"><h2>Usage and interface</h2><div class="lpdoc-cartouche"><ul><li><strong>Library usage:</strong><br/><tt>:- use_module(/home/mihai/pd/practica2/Practica2-PD/code.pl).</tt><li><strong>Exports:</strong><br/><ul class="lpdoc-itemize-minus"><li><em>Predicates:</em><br/><a class="lpdoc-idx-anchor" id="0" href="#author_data/4"><tt>author_data/4</tt></a>, <a class="lpdoc-idx-anchor" id="1" href="#split/3"><tt>split/3</tt></a>, <a class="lpdoc-idx-anchor" id="2" href="#group/3"><tt>group/3</tt></a>, <a class="lpdoc-idx-anchor" id="3" href="#is_repeated/3"><tt>is_repeated/3</tt></a>, <a class="lpdoc-idx-anchor" id="4" href="#simple_repetition/2"><tt>simple_repetition/2</tt></a>, <a class="lpdoc-idx-anchor" id="5" href="#compress/2"><tt>compress/2</tt></a>, <a class="lpdoc-idx-anchor" id="6" href="#memo/2"><tt>memo/2</tt></a>, <a class="lpdoc-idx-anchor" id="7" href="#clean_memo/0"><tt>clean_memo/0</tt></a>, <a class="lpdoc-idx-anchor" id="8" href="#recursive_compression/2"><tt>recursive_compression/2</tt></a>, <a class="lpdoc-idx-anchor" id="9" href="#better_compression_memo/2"><tt>better_compression_memo/2</tt></a>, <a class="lpdoc-idx-anchor" id="10" href="#better_compression/2"><tt>better_compression/2</tt></a>, <a class="lpdoc-idx-anchor" id="11" href="#compression/2"><tt>compression/2</tt></a>, <a class="lpdoc-idx-anchor" id="12" href="#repetition/2"><tt>repetition/2</tt></a>, <a class="lpdoc-idx-anchor" id="13" href="#division/2"><tt>division/2</tt></a>, <a class="lpdoc-idx-anchor" id="14" href="#decompress/2"><tt>decompress/2</tt></a>, <a class="lpdoc-idx-anchor" id="15" href="#extract_group/4"><tt>extract_group/4</tt></a>, <a class="lpdoc-idx-anchor" id="16" href="#min_list/2"><tt>min_list/2</tt></a>, <a class="lpdoc-idx-anchor" id="17" href="#min_list_aux/4"><tt>min_list_aux/4</tt></a>, <a class="lpdoc-idx-anchor" id="18" href="#expand_sequence/3"><tt>expand_sequence/3</tt></a>.
+<li><em>Multifiles:</em><br/><a class="lpdoc-idx-anchor" id="19" href="#call_in_module/2"><tt>call_in_module/2</tt></a>.
+</ul></ul></div></div><div id="Documentation on exports"><h2>Documentation on exports</h2><div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="author_data/4" href="codesearch.html#author_data/4">author_data/4</a></div><div class="lpdoc-deftext">Define los datos del autor del módulo.</div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="split/3" href="codesearch.html#split/3">split/3</a></div><div class="lpdoc-deftext">Este predicado es cierto si <span class="lpdoc-var">Parte1</span> y <span class="lpdoc-var">Parte2</span> son dos subsecuencias no vacías que, cuando se concatenan, forman la secuencia <span class="lpdoc-var">Todo</span>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">split(Todo,Parte1,Parte2) :-
+    append(Parte1,Parte2,Todo),
+    Parte1\==[],
+    Parte2\==[].
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="20" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Todo</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="21" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Parte1</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="22" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Parte2</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="24" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="23" href="codesearch.html#Todo=[1,2,3,4,5]"><tt>Todo=[1,2,3,4,5]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="26" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="25" href="codesearch.html#Parte1=[1,2]"><tt>Parte1=[1,2]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="28" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="27" href="codesearch.html#Parte2=[3,4,5]"><tt>Parte2=[3,4,5]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="29" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="31" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="30" href="codesearch.html#Todo=[a,b,c]"><tt>Todo=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="33" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="32" href="codesearch.html#Parte1=[a]"><tt>Parte1=[a]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="35" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="34" href="codesearch.html#Parte2=[b,c]"><tt>Parte2=[b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="36" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="38" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="37" href="codesearch.html#Todo=[a]"><tt>Todo=[a]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="39" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="41" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="40" href="codesearch.html#Todo=[]"><tt>Todo=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="42" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="44" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="43" href="codesearch.html#Todo=[1,2,3,4,5]"><tt>Todo=[1,2,3,4,5]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="46" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="45" href="codesearch.html#Parte1=[]"><tt>Parte1=[]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="48" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="47" href="codesearch.html#Parte2=[1,2,3,4,5]"><tt>Parte2=[1,2,3,4,5]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="49" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>split(Todo,Parte1,Parte2)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="51" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="50" href="codesearch.html#Todo=[1,2,3,4,5]"><tt>Todo=[1,2,3,4,5]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="53" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="52" href="codesearch.html#Parte1=[1,2,3,4,5]"><tt>Parte1=[1,2,3,4,5]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="55" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="54" href="codesearch.html#Parte2=[]"><tt>Parte2=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="56" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">split(Todo,Parte1,Parte2)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="group/3" href="codesearch.html#group/3">group/3</a></div><div class="lpdoc-deftext">Este predicado relaciona una secuencia <span class="lpdoc-var">Parte</span> y un número de repeticiones <span class="lpdoc-var">Num</span> con su representación agrupada <span class="lpdoc-var">Grupo</span>. Si <span class="lpdoc-var">Parte</span> tiene más de un elemento, <span class="lpdoc-var">Grupo</span> será de la forma <tt>[&apos;&lt;&apos;, Parte..., &apos;&gt;&apos;, Num]</tt>. Si <span class="lpdoc-var">Parte</span> tiene un solo elemento <tt>[X]</tt>, <span class="lpdoc-var">Grupo</span> será <tt>[X, Num]</tt>. Si <span class="lpdoc-var">Parte</span> es vacía, <span class="lpdoc-var">Grupo</span> será <tt>[Num]</tt>. El predicado puede funcionar en ambas direcciones (componiendo o descomponiendo <span class="lpdoc-var">Grupo</span>).<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">group(Parte,Num,Grupo) :-
+    nonvar(Grupo),
+    integer(Num),
+    Num&gt;0,
+    append(TempParte,[Num],Grupo),
+    length(TempParte,L1),
+    ( L1&gt;1 -&gt;
+        append([&lt;],Temp2,TempParte),
+        append(Parte,[&gt;],Temp2)
+    ; Parte=TempParte
+    ).
+group(Parte,Num,Grupo) :-
+    var(Grupo),
+    nonvar(Parte),
+    integer(Num),
+    Num&gt;0,
+    length(Parte,L),
+    ( L&gt;1 -&gt;
+        append([&lt;],Parte,Temp1),
+        append(Temp1,[&gt;],Temp2),
+        append(Temp2,[Num],Grupo)
+    ; append(Parte,[Num],Grupo)
+    ).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="57" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Parte</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="58" href="codesearch.html#integer/1"><tt>integer/1</tt></a>)</span><span><span class="lpdoc-var">Num</span> is currently instantiated to an integer.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="59" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Grupo</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="61" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="60" href="codesearch.html#Parte=[a,b,c,d,e]"><tt>Parte=[a,b,c,d,e]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="63" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="62" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="65" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="64" href="codesearch.html#Grupo=[&lt;,a,b,c,d,e,&gt;,3]"><tt>Grupo=[&lt;,a,b,c,d,e,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="66" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="68" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="67" href="codesearch.html#Parte=[a,b]"><tt>Parte=[a,b]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="70" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="69" href="codesearch.html#Num=2"><tt>Num=2</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="72" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="71" href="codesearch.html#Grupo=[&lt;,a,b,&gt;,2]"><tt>Grupo=[&lt;,a,b,&gt;,2]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="73" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="75" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="74" href="codesearch.html#Parte=[z]"><tt>Parte=[z]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="77" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="76" href="codesearch.html#Num=5"><tt>Num=5</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="79" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="78" href="codesearch.html#Grupo=[z,5]"><tt>Grupo=[z,5]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="80" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="82" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="81" href="codesearch.html#Parte=[]"><tt>Parte=[]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="84" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="83" href="codesearch.html#Num=5"><tt>Num=5</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="86" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="85" href="codesearch.html#Grupo=[5]"><tt>Grupo=[5]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="87" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="89" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="88" href="codesearch.html#Parte=[a,b,c]"><tt>Parte=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="91" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="90" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="92" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="94" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="93" href="codesearch.html#Parte=[a,b,c]"><tt>Parte=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="96" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="95" href="codesearch.html#Num=not_a_number"><tt>Num=not_a_number</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="97" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="99" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="98" href="codesearch.html#Parte=not_a_list"><tt>Parte=not_a_list</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="101" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="100" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="102" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="104" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="103" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="106" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="105" href="codesearch.html#Grupo=[&lt;,a,b,c,d,e,&gt;,3]"><tt>Grupo=[&lt;,a,b,c,d,e,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="108" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="107" href="codesearch.html#Parte=[a,b,c,d,e]"><tt>Parte=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="109" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>group(Parte,Num,Grupo)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="111" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="110" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="113" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="112" href="codesearch.html#Grupo=[&lt;,a,b,c,d,e,&gt;,2]"><tt>Grupo=[&lt;,a,b,c,d,e,&gt;,2]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="114" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">group(Parte,Num,Grupo)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="is_repeated/3" href="codesearch.html#is_repeated/3">is_repeated/3</a></div><div class="lpdoc-deftext">Este predicado es cierto si la secuencia <span class="lpdoc-var">Cs</span> consiste en la secuencia <span class="lpdoc-var">Parte</span> repetida <span class="lpdoc-var">Num</span> veces. <span class="lpdoc-var">Num</span> debe ser mayor que 0 para que la repetición sea válida en el contexto de compresión.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">is_repeated([],_1,0).
+is_repeated(Cs,Parte,Num) :-
+    Cs\==[],
+    Parte\==[],
+    append(Parte,Aux,Cs),
+    is_repeated(Aux,Parte,Num1),
+    ( var(Num) -&gt;
+        Num is Num1+1
+    ; Num&gt;0,
+      Num is Num1+1
+    ).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="115" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Cs</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="116" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Parte</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="117" href="codesearch.html#integer/1"><tt>integer/1</tt></a>)</span><span><span class="lpdoc-var">Num</span> is currently instantiated to an integer.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="119" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="118" href="codesearch.html#Cs=[a,b,a,b,a,b]"><tt>Cs=[a,b,a,b,a,b]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="121" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="120" href="codesearch.html#Parte=[a,b]"><tt>Parte=[a,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="123" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="122" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="124" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="126" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="125" href="codesearch.html#Cs=[]"><tt>Cs=[]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="128" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="127" href="codesearch.html#Parte=[a,b,c]"><tt>Parte=[a,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="130" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="129" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="131" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="133" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="132" href="codesearch.html#Cs=[]"><tt>Cs=[]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="135" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="134" href="codesearch.html#Parte=[]"><tt>Parte=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="137" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="136" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="138" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="140" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="139" href="codesearch.html#Cs=[a,b,c]"><tt>Cs=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="142" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="141" href="codesearch.html#Parte=[a,b]"><tt>Parte=[a,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="143" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="145" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="144" href="codesearch.html#Cs=[a,b]"><tt>Cs=[a,b]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="147" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="146" href="codesearch.html#Parte=[a,b,c]"><tt>Parte=[a,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="148" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>is_repeated(Cs,Parte,Num)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="150" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="149" href="codesearch.html#Cs=[a,a,a]"><tt>Cs=[a,a,a]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="152" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="151" href="codesearch.html#Parte=[a]"><tt>Parte=[a]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="154" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="153" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="155" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">is_repeated(Cs,Parte,Num)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="simple_repetition/2" href="codesearch.html#simple_repetition/2">simple_repetition/2</a></div><div class="lpdoc-deftext">Este predicado es cierto si <span class="lpdoc-var">Comprimida</span> es una compresión de <span class="lpdoc-var">Inicial</span> que consiste en una única repetición de alguna <span class="lpdoc-var">Parte</span> de <span class="lpdoc-var">Inicial</span>. Busca una <span class="lpdoc-var">Parte</span> tal que <span class="lpdoc-var">Inicial</span> sea <span class="lpdoc-var">Parte</span> repetida <span class="lpdoc-var">Num</span> veces, y luego forma <span class="lpdoc-var">Comprimida</span> usando <a class="lpdoc-idx-anchor" id="156" href="#group/3"><tt>group/3</tt></a>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">simple_repetition(Inicial,Comprimida) :-
+    Inicial\==[],
+    split(Inicial,Parte1,_1),
+    is_repeated(Inicial,Parte1,Num),
+    group(Parte1,Num,Comprimida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="157" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="158" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="160" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="159" href="codesearch.html#Inicial=[a,a,a,a]"><tt>Inicial=[a,a,a,a]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="161" href="codesearch.html#member/2"><tt>member/2</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is an element of <span class="lpdoc-var">[[a,4],[&lt;,a,a,&gt;,2]]</span>.
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="162" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">simple_repetition(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="164" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="163" href="codesearch.html#Inicial=[x,y,x,y,x,y]"><tt>Inicial=[x,y,x,y,x,y]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="166" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="165" href="codesearch.html#Comprimida=[&lt;,x,y,&gt;,3]"><tt>Comprimida=[&lt;,x,y,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="167" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">simple_repetition(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="169" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="168" href="codesearch.html#Inicial=[]"><tt>Inicial=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="170" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">simple_repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="172" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="171" href="codesearch.html#Inicial=[a,a,a,b,b,b]"><tt>Inicial=[a,a,a,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="173" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">simple_repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>simple_repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="175" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="174" href="codesearch.html#Inicial=[a,b,c,d,e]"><tt>Inicial=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="176" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">simple_repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="compress/2" href="codesearch.html#compress/2">compress/2</a></div><div class="lpdoc-deftext">Predicado principal para la compresión. Es cierto si <span class="lpdoc-var">Comprimida</span> es la versión comprimida (óptima según la heurística implementada) de la secuencia <span class="lpdoc-var">Inicial</span>. Utiliza memoización para mejorar la eficiencia.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">compress(Inicial,Comprimida) :-
+    clean_memo,
+    recursive_compression(Inicial,Comprimida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="177" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="178" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="180" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="179" href="codesearch.html#Inicial=[a,a,a,a]"><tt>Inicial=[a,a,a,a]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="182" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="181" href="codesearch.html#Comprimida=[a,4]"><tt>Comprimida=[a,4]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="183" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="185" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="184" href="codesearch.html#Inicial=[x,y,x,y,x,y]"><tt>Inicial=[x,y,x,y,x,y]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="187" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="186" href="codesearch.html#Comprimida=[&lt;,x,y,&gt;,3]"><tt>Comprimida=[&lt;,x,y,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="188" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="190" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="189" href="codesearch.html#Inicial=[a,a,b,b,b]"><tt>Inicial=[a,a,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="192" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="191" href="codesearch.html#Comprimida=[a,a,b,3]"><tt>Comprimida=[a,a,b,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="193" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="195" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="194" href="codesearch.html#Inicial=[a,b,c,d,d,d,e,f]"><tt>Inicial=[a,b,c,d,d,d,e,f]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="197" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="196" href="codesearch.html#Comprimida=[a,b,c,d,3,e,f]"><tt>Comprimida=[a,b,c,d,3,e,f]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="198" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="200" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="199" href="codesearch.html#Inicial=[a,b,c,d,e]"><tt>Inicial=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="202" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="201" href="codesearch.html#Comprimida=[a,b,c,d,e]"><tt>Comprimida=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="203" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="205" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="204" href="codesearch.html#Inicial=[]"><tt>Inicial=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="207" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="206" href="codesearch.html#Comprimida=[]"><tt>Comprimida=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="208" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="210" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="209" href="codesearch.html#Inicial=[a,b,b,b,b,a,b,b,b,b]"><tt>Inicial=[a,b,b,b,b,a,b,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="212" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="211" href="codesearch.html#Comprimida=[&lt;,a,b,4,&gt;,2]"><tt>Comprimida=[&lt;,a,b,4,&gt;,2]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="213" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>compress(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="215" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="214" href="codesearch.html#Inicial=[a,a,b,b,a,a,b,b,a,a,b,b,c]"><tt>Inicial=[a,a,b,b,a,a,b,b,a,a,b,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="217" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="216" href="codesearch.html#Comprimida=[&lt;,a,a,b,b,&gt;,3,c]"><tt>Comprimida=[&lt;,a,a,b,b,&gt;,3,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="218" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">compress(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="memo/2" href="codesearch.html#memo/2">memo/2</a></div><div class="lpdoc-deftext">Predicado dinámico utilizado para la memoización. Almacena los resultados de compresiones ya calculadas (<span class="lpdoc-var">Inicial</span> -&gt; <span class="lpdoc-var">Comprimida</span>) para evitar recálculos.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>memo(Inicial,Comprimida)</tt>
+</span><p>Almacena una <span class="lpdoc-var">Comprimida</span> para una <span class="lpdoc-var">Inicial</span> dada.</p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="219" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="220" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul>
+The predicate is of type <em>dynamic</em>.<br/></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="clean_memo/0" href="codesearch.html#clean_memo/0">clean_memo/0</a></div><div class="lpdoc-deftext">Limpia todos los hechos almacenados por el predicado <a class="lpdoc-idx-anchor" id="221" href="#memo/2"><tt>memo/2</tt></a>. Se llama antes de iniciar una nueva compresión completa.<p><span class="lpdoc-usage-header">Usage:</span><p>Elimina todas las entradas de la tabla de memoización. Su implementación es: <pre class="lpdoc-codeblock">clean_memo :-
+    retractall(memo(_1,_2)).
+</pre></p><ul class="lpdoc-itemize-minus"></ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="recursive_compression/2" href="codesearch.html#recursive_compression/2">recursive_compression/2</a></div><div class="lpdoc-deftext">Núcleo recursivo de la compresión. Intenta encontrar la mejor compresión para <span class="lpdoc-var">Inicial</span> usando <a class="lpdoc-idx-anchor" id="222" href="#better_compression_memo/2"><tt>better_compression_memo/2</tt></a>. Si no se encuentra una compresión mejor que la original, devuelve la <span class="lpdoc-var">Inicial</span> misma. El corte asegura que se devuelve una única solución óptima.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>recursive_compression(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">recursive_compression(Inicial,Comprimida) :-
+    better_compression_memo(Inicial,Comprimida),
+    !.
+recursive_compression(Inicial,Inicial).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="223" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="224" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="better_compression_memo/2" href="codesearch.html#better_compression_memo/2">better_compression_memo/2</a></div><div class="lpdoc-deftext">Implementa la lógica de memoización para <a class="lpdoc-idx-anchor" id="225" href="#better_compression/2"><tt>better_compression/2</tt></a>. Primero consulta si la compresión para <span class="lpdoc-var">Inicial</span> ya está en <a class="lpdoc-idx-anchor" id="226" href="#memo/2"><tt>memo/2</tt></a>. Si no, llama a <a class="lpdoc-idx-anchor" id="227" href="#better_compression/2"><tt>better_compression/2</tt></a> para calcularla y luego la almacena en <a class="lpdoc-idx-anchor" id="228" href="#memo/2"><tt>memo/2</tt></a>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>better_compression_memo(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">better_compression_memo(Inicial,Comprimida) :-
+    memo(Inicial,Comprimida),
+    !.
+better_compression_memo(Inicial,Comprimida) :-
+    better_compression(Inicial,Comprimida),
+    assert(memo(Inicial,Comprimida)).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="229" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="230" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="better_compression/2" href="codesearch.html#better_compression/2">better_compression/2</a></div><div class="lpdoc-deftext">Encuentra la mejor compresión para <span class="lpdoc-var">Inicial</span> entre todas las posibles compresiones generadas por <a class="lpdoc-idx-anchor" id="231" href="#compression/2"><tt>compression/2</tt></a>. Si ninguna compresión es más corta que <span class="lpdoc-var">Inicial</span>, <span class="lpdoc-var">Comprimida</span> se unifica con <span class="lpdoc-var">Inicial</span>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>better_compression(Inicial,Comprimida)</tt>
+</span><p>Selecciona la mejor <span class="lpdoc-var">Comprimida</span> para <span class="lpdoc-var">Inicial</span>. Su implementación es: <pre class="lpdoc-codeblock">better_compression(Inicial,Comprimida) :-
+    findall(Comprimida,compression(Inicial,Comprimida),Lista),
+    min_list(Lista,Posible_Comprimida),
+    length(Inicial,L1),
+    length(Posible_Comprimida,L2),
+    ( L1&gt;L2 -&gt;
+        Comprimida=Posible_Comprimida
+    ; Comprimida=Inicial
+    ).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="232" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="233" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="compression/2" href="codesearch.html#compression/2">compression/2</a></div><div class="lpdoc-deftext">Generador de posibles compresiones para <span class="lpdoc-var">Inicial</span>. Intenta comprimir por <a class="lpdoc-idx-anchor" id="234" href="#repetition/2"><tt>repetition/2</tt></a> o por <a class="lpdoc-idx-anchor" id="235" href="#division/2"><tt>division/2</tt></a>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>compression(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">compression(Inicial,Comprimida) :-
+    repetition(Inicial,Comprimida).
+compression(Inicial,Comprimida) :-
+    division(Inicial,Comprimida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="236" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="237" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="repetition/2" href="codesearch.html#repetition/2">repetition/2</a></div><div class="lpdoc-deftext">Intenta comprimir <span class="lpdoc-var">Inicial</span> encontrando una <span class="lpdoc-var">Parte1</span> que se repite <span class="lpdoc-var">Num</span> veces. La <span class="lpdoc-var">Parte1</span> se comprime recursivamente antes de ser agrupada.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">repetition(Inicial,Comprimida) :-
+    Inicial\==[],
+    split(Inicial,Parte1,_1),
+    is_repeated(Inicial,Parte1,Num),
+    Num&gt;1,
+    recursive_compression(Parte1,Precomprimida),
+    group(Precomprimida,Num,Comprimida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="238" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="239" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="241" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="240" href="codesearch.html#Inicial=[a,a,a,a]"><tt>Inicial=[a,a,a,a]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="242" href="codesearch.html#member/2"><tt>member/2</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is an element of <span class="lpdoc-var">[[a,4],[&lt;,a,a,&gt;,2]]</span>.
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="243" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">repetition(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="245" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="244" href="codesearch.html#Inicial=[x,y,x,y,x,y]"><tt>Inicial=[x,y,x,y,x,y]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="247" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="246" href="codesearch.html#Comprimida=[&lt;,x,y,&gt;,3]"><tt>Comprimida=[&lt;,x,y,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="248" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">repetition(Inicial,Comprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="250" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="249" href="codesearch.html#Inicial=[]"><tt>Inicial=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="251" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="253" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="252" href="codesearch.html#Inicial=[a,a,a,b,b,b]"><tt>Inicial=[a,a,a,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="254" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>repetition(Inicial,Comprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="256" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="255" href="codesearch.html#Inicial=[a,b,c,d,e]"><tt>Inicial=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="257" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">repetition(Inicial,Comprimida)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="division/2" href="codesearch.html#division/2">division/2</a></div><div class="lpdoc-deftext">Intenta comprimir <span class="lpdoc-var">Inicial</span> dividiéndola en dos <span class="lpdoc-var">Parte1</span> y <span class="lpdoc-var">Parte2</span>, comprimiendo cada una recursivamente, y luego concatenando sus compresiones. Solo tiene éxito si al menos una de las partes se comprime<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>division(Inicial,Comprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">division(Inicial,Comprimida) :-
+    Inicial\==[],
+    split(Inicial,Parte1,Parte2),
+    recursive_compression(Parte1,Precomprimida1),
+    recursive_compression(Parte2,Precomprimida2),
+    ( Precomprimida1\==Parte1
+    ; Precomprimida2\==Parte2
+    ),
+    append(Precomprimida1,Precomprimida2,Comprimida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="258" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Inicial</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="259" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="decompress/2" href="codesearch.html#decompress/2">decompress/2</a></div><div class="lpdoc-deftext">Predicado principal para la descompresión. Es cierto si <span class="lpdoc-var">Descomprimida</span> es la secuencia original que resulta de descomprimir la secuencia <span class="lpdoc-var">Comprimida</span>. Maneja los diferentes formatos de compresión (grupos simples, grupos complejos, caracteres sueltos).<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">decompress([],[]).
+decompress([&lt;|T1],Descomprimida) :-
+    !,
+    extract_group(T1,Patron,Num,Resto),
+    decompress(Patron,PatronDesc),
+    expand_sequence(PatronDesc,Num,GrupoDesc),
+    decompress(Resto,RestoDesc),
+    append(GrupoDesc,RestoDesc,Descomprimida).
+decompress([Caracter,Num|Resto],Descomprimida) :-
+    atom(Caracter),
+    Caracter\== &lt;,
+    Caracter\== &gt;,
+    integer(Num),
+    Num&gt;1,
+    !,
+    expand_sequence([Caracter],Num,GrupoDesc),
+    decompress(Resto,RestoDesc),
+    append(GrupoDesc,RestoDesc,Descomprimida).
+decompress([Caracter|RestoComp],[Caracter|RestoDesc]) :-
+    atom(Caracter),
+    Caracter\== &lt;,
+    Caracter\== &gt;,
+    !,
+    decompress(RestoComp,RestoDesc).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="260" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Comprimida</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="261" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Descomprimida</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="263" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="262" href="codesearch.html#Comprimida=[a,4]"><tt>Comprimida=[a,4]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="265" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="264" href="codesearch.html#Descomprimida=[a,a,a,a]"><tt>Descomprimida=[a,a,a,a]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="266" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="268" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="267" href="codesearch.html#Comprimida=[&lt;,x,y,&gt;,3]"><tt>Comprimida=[&lt;,x,y,&gt;,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="270" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="269" href="codesearch.html#Descomprimida=[x,y,x,y,x,y]"><tt>Descomprimida=[x,y,x,y,x,y]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="271" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="273" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="272" href="codesearch.html#Comprimida=[a,a,b,3]"><tt>Comprimida=[a,a,b,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="275" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="274" href="codesearch.html#Descomprimida=[a,a,b,b,b]"><tt>Descomprimida=[a,a,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="276" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="278" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="277" href="codesearch.html#Comprimida=[a,b,c,d,3,e,f]"><tt>Comprimida=[a,b,c,d,3,e,f]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="280" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="279" href="codesearch.html#Descomprimida=[a,b,c,d,d,d,e,f]"><tt>Descomprimida=[a,b,c,d,d,d,e,f]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="281" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="283" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="282" href="codesearch.html#Comprimida=[a,b,c,d,e]"><tt>Comprimida=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="285" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="284" href="codesearch.html#Descomprimida=[a,b,c,d,e]"><tt>Descomprimida=[a,b,c,d,e]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="286" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="288" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="287" href="codesearch.html#Comprimida=[]"><tt>Comprimida=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="290" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="289" href="codesearch.html#Descomprimida=[]"><tt>Descomprimida=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="291" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="293" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="292" href="codesearch.html#Comprimida=[&lt;,a,b,4,&gt;,2]"><tt>Comprimida=[&lt;,a,b,4,&gt;,2]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="295" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="294" href="codesearch.html#Descomprimida=[a,b,b,b,b,a,b,b,b,b]"><tt>Descomprimida=[a,b,b,b,b,a,b,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="296" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="298" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="297" href="codesearch.html#Comprimida=[&lt;,a,a,b,b,&gt;,3,c]"><tt>Comprimida=[&lt;,a,a,b,b,&gt;,3,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="300" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="299" href="codesearch.html#Descomprimida=[a,a,b,b,a,a,b,b,a,a,b,b,c]"><tt>Descomprimida=[a,a,b,b,a,a,b,b,a,a,b,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="301" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>decompress(Comprimida,Descomprimida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="303" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="302" href="codesearch.html#Comprimida=[a,a,a,b,3]"><tt>Comprimida=[a,a,a,b,3]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="305" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="304" href="codesearch.html#Descomprimida=[a,a,a,b,b,b]"><tt>Descomprimida=[a,a,a,b,b,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="306" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">decompress(Comprimida,Descomprimida)</span> do not fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="extract_group/4" href="codesearch.html#extract_group/4">extract_group/4</a></div><div class="lpdoc-deftext">Predicado auxiliar para <a class="lpdoc-idx-anchor" id="307" href="#decompress/2"><tt>decompress/2</tt></a>. Dada una <span class="lpdoc-var">Lista</span> (la parte de una secuencia comprimida después de un &apos;&lt;&apos;), extrae el <span class="lpdoc-var">Patron</span> interno (hasta el &apos;&gt;&apos;), el <span class="lpdoc-var">Num</span> de repetición que sigue al &apos;&gt;&apos;, y el <span class="lpdoc-var">Resto</span> de la <span class="lpdoc-var">Lista</span> original después de <span class="lpdoc-var">Num</span>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>extract_group(Lista,Patron,Num,Resto)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">extract_group(Lista,Patron,Num,Resto) :-
+    append(Parte1,Resto,Lista),
+    append(ParteInterna,[Num],Parte1),
+    integer(Num),
+    Num&gt;=0,
+    append(Patron,[&gt;],ParteInterna).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="308" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Lista</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="309" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Patron</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="310" href="codesearch.html#integer/1"><tt>integer/1</tt></a>)</span><span><span class="lpdoc-var">Num</span> is currently instantiated to an integer.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="311" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Resto</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="min_list/2" href="codesearch.html#min_list/2">min_list/2</a></div><div class="lpdoc-deftext">Encuentra la secuencia <span class="lpdoc-var">Min</span> de menor longitud en una <span class="lpdoc-var">Lista</span> de secuencias.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>min_list(Lista,Min)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">min_list([H|T],Min) :-
+    length(H,L1),
+    min_list_aux(T,H,L1,Min).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="312" href="codesearch.html#list/2"><tt>list/2</tt></a>)</span><span><span class="lpdoc-var">Lista</span> is a list of <span class="lpdoc-var">list</span>s.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="313" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Min</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>min_list(Lista,Min)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="315" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="314" href="codesearch.html#Lista=[[a,b,c],[a,b],[a,b,a,b]]"><tt>Lista=[[a,b,c],[a,b],[a,b,a,b]]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="317" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="316" href="codesearch.html#Min=[a,b]"><tt>Min=[a,b]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="318" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">min_list(Lista,Min)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>min_list(Lista,Min)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="320" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="319" href="codesearch.html#Lista=[[a,b,c],[a],[a,b],[a]]"><tt>Lista=[[a,b,c],[a],[a,b],[a]]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="322" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="321" href="codesearch.html#Min=[a]"><tt>Min=[a]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="323" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">min_list(Lista,Min)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>min_list(Lista,Min)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="325" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="324" href="codesearch.html#Lista=[[a,b,c]]"><tt>Lista=[[a,b,c]]</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="327" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="326" href="codesearch.html#Min=[a,b,c]"><tt>Min=[a,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="328" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">min_list(Lista,Min)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>min_list(Lista,Min)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="330" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="329" href="codesearch.html#Lista=[]"><tt>Lista=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="331" href="codesearch.html#fails/1"><tt>fails/1</tt></a>)</span><span>Calls of the form <span class="lpdoc-var">min_list(Lista,Min)</span> fail.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="min_list_aux/4" href="codesearch.html#min_list_aux/4">min_list_aux/4</a></div><div class="lpdoc-deftext">Auxiliar recursivo de cola para <a class="lpdoc-idx-anchor" id="332" href="#min_list/2"><tt>min_list/2</tt></a>. Mantiene el <span class="lpdoc-var">Min_Actual</span> y su longitud <span class="lpdoc-var">L</span>, comparándolos con el siguiente elemento de la <span class="lpdoc-var">Lista</span> para encontrar el <span class="lpdoc-var">Min_Final</span>.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>min_list_aux(Lista,Min_Actual,L,Min_Final)</tt>
+</span><p>Auxiliar para <a class="lpdoc-idx-anchor" id="333" href="#min_list/2"><tt>min_list/2</tt></a>. Su implementación es: <pre class="lpdoc-codeblock">min_list_aux([],Min_Actual,_1,Min_Actual).
+min_list_aux([H|T],Min_Actual,L,Min_Final) :-
+    length(H,L2),
+    ( L2&lt;L -&gt;
+        min_list_aux(T,H,L2,Min_Final)
+    ; min_list_aux(T,Min_Actual,L,Min_Final)
+    ).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="334" href="codesearch.html#list/2"><tt>list/2</tt></a>)</span><span><span class="lpdoc-var">Lista</span> is a list of <span class="lpdoc-var">list</span>s.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="335" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Min_Actual</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="336" href="codesearch.html#integer/1"><tt>integer/1</tt></a>)</span><span><span class="lpdoc-var">L</span> is currently instantiated to an integer.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="337" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Min_Final</span> is a list.
+</span>
+</ul></div></div><p>
+<div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="expand_sequence/3" href="codesearch.html#expand_sequence/3">expand_sequence/3</a></div><div class="lpdoc-deftext">Crea una <span class="lpdoc-var">SecuenciaExpandida</span> repitiendo la <span class="lpdoc-var">Secuencia</span> de entrada <span class="lpdoc-var">Num</span> veces.<p><span class="lpdoc-usage-header">Usage:</span><span class="lpdoc-usage-decl"><tt>expand_sequence(Secuencia,Num,SecuenciaExpandida)</tt>
+</span><p>Su implementación es: <pre class="lpdoc-codeblock">expand_sequence(_1,0,[]).
+expand_sequence(Secuencia,Num,SecuenciaExpandida) :-
+    Num&gt;0,
+    Num1 is Num-1,
+    expand_sequence(Secuencia,Num1,SecuenciaParcial),
+    append(Secuencia,SecuenciaParcial,SecuenciaExpandida).
+</pre></p><ul class="lpdoc-itemize-minus"><li><em>Call and exit should be compatible with:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="338" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">Secuencia</span> is a list.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="339" href="codesearch.html#integer/1"><tt>integer/1</tt></a>)</span><span><span class="lpdoc-var">Num</span> is currently instantiated to an integer.
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="340" href="codesearch.html#list/1"><tt>list/1</tt></a>)</span><span><span class="lpdoc-var">SecuenciaExpandida</span> is a list.
+</span>
+</ul>
+<strong>Other properties:</strong> <br/><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>expand_sequence(Secuencia,Num,SecuenciaExpandida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="342" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="341" href="codesearch.html#Secuencia=[a,b,c]"><tt>Secuencia=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="344" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="343" href="codesearch.html#Num=3"><tt>Num=3</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="346" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="345" href="codesearch.html#SecuenciaExpandida=[a,b,c,a,b,c,a,b,c]"><tt>SecuenciaExpandida=[a,b,c,a,b,c,a,b,c]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="347" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">expand_sequence(Secuencia,Num,SecuenciaExpandida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>expand_sequence(Secuencia,Num,SecuenciaExpandida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="349" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="348" href="codesearch.html#Secuencia=[]"><tt>Secuencia=[]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="351" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="350" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="353" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="352" href="codesearch.html#SecuenciaExpandida=[]"><tt>SecuenciaExpandida=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="354" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">expand_sequence(Secuencia,Num,SecuenciaExpandida)</span> do not fail.
+</span>
+</ul><p><span class="lpdoc-usage-header">Test:</span><span class="lpdoc-usage-decl"><tt>expand_sequence(Secuencia,Num,SecuenciaExpandida)</tt>
+</span><p></p><ul class="lpdoc-itemize-minus"><li><em>If the following properties hold at call time:</em><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="356" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="355" href="codesearch.html#Secuencia=[a,b,c]"><tt>Secuencia=[a,b,c]</tt></a>
+</span><br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="358" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="357" href="codesearch.html#Num=0"><tt>Num=0</tt></a>
+</span>
+<br/><em>then the following properties should hold upon exit:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="360" href="codesearch.html#= /2"><tt>= /2</tt></a>)</span><span><a class="lpdoc-idx-anchor" id="359" href="codesearch.html#SecuenciaExpandida=[]"><tt>SecuenciaExpandida=[]</tt></a>
+</span>
+<br/><em>then the following properties should hold globally:</em>
+<br/><span class="lpdoc-on-right"> (<a class="lpdoc-idx-anchor" id="361" href="codesearch.html#not_fails/1"><tt>not_fails/1</tt></a>)</span><span>All the calls of the form <span class="lpdoc-var">expand_sequence(Secuencia,Num,SecuenciaExpandida)</span> do not fail.
+</span>
+</ul></div></div><p>
+</div><div id="Documentation on multifiles"><h2>Documentation on multifiles</h2><div><div class="lpdoc-defname"><span class="lpdoc-predtag">PREDICATE</span><a class="lpdoc-idx-anchor" id="call_in_module/2" href="codesearch.html#call_in_module/2">call_in_module/2</a></div><div class="lpdoc-deftext">No further documentation available for this predicate.
+The predicate is <em>multifile</em>.<br/></div></div><p>
+</div><div id="Documentation on imports"><h2>Documentation on imports</h2>This module has the following direct dependencies:<ul class="lpdoc-itemize-minus"><li><em>Application modules:</em><br/><a class="lpdoc-idx-anchor" id="362" href="codesearch.html#operators"><tt>operators</tt></a>, <a class="lpdoc-idx-anchor" id="363" href="codesearch.html#dcg_phrase_rt"><tt>dcg_phrase_rt</tt></a>, <a class="lpdoc-idx-anchor" id="364" href="codesearch.html#datafacts_rt"><tt>datafacts_rt</tt></a>, <a class="lpdoc-idx-anchor" id="365" href="codesearch.html#dynamic_rt"><tt>dynamic_rt</tt></a>, <a class="lpdoc-idx-anchor" id="366" href="codesearch.html#classic_predicates"><tt>classic_predicates</tt></a>.
+<li><em>Internal (engine) modules:</em><br/><a class="lpdoc-idx-anchor" id="367" href="codesearch.html#term_basic"><tt>term_basic</tt></a>, <a class="lpdoc-idx-anchor" id="368" href="codesearch.html#arithmetic"><tt>arithmetic</tt></a>, <a class="lpdoc-idx-anchor" id="369" href="codesearch.html#atomic_basic"><tt>atomic_basic</tt></a>, <a class="lpdoc-idx-anchor" id="370" href="codesearch.html#basiccontrol"><tt>basiccontrol</tt></a>, <a class="lpdoc-idx-anchor" id="371" href="codesearch.html#exceptions"><tt>exceptions</tt></a>, <a class="lpdoc-idx-anchor" id="372" href="codesearch.html#term_compare"><tt>term_compare</tt></a>, <a class="lpdoc-idx-anchor" id="373" href="codesearch.html#term_typing"><tt>term_typing</tt></a>, <a class="lpdoc-idx-anchor" id="374" href="codesearch.html#debugger_support"><tt>debugger_support</tt></a>, <a class="lpdoc-idx-anchor" id="375" href="codesearch.html#hiord_rt"><tt>hiord_rt</tt></a>, <a class="lpdoc-idx-anchor" id="376" href="codesearch.html#stream_basic"><tt>stream_basic</tt></a>, <a class="lpdoc-idx-anchor" id="377" href="codesearch.html#io_basic"><tt>io_basic</tt></a>, <a class="lpdoc-idx-anchor" id="378" href="codesearch.html#runtime_control"><tt>runtime_control</tt></a>, <a class="lpdoc-idx-anchor" id="379" href="codesearch.html#basic_props"><tt>basic_props</tt></a>.
+<li><em>Packages:</em><br/><a class="lpdoc-idx-anchor" id="380" href="codesearch.html#prelude"><tt>prelude</tt></a>, <a class="lpdoc-idx-anchor" id="381" href="codesearch.html#initial"><tt>initial</tt></a>, <a class="lpdoc-idx-anchor" id="382" href="codesearch.html#condcomp"><tt>condcomp</tt></a>, <a class="lpdoc-idx-anchor" id="383" href="codesearch.html#classic"><tt>classic</tt></a>, <a class="lpdoc-idx-anchor" id="384" href="codesearch.html#runtime_ops"><tt>runtime_ops</tt></a>, <a class="lpdoc-idx-anchor" id="385" href="codesearch.html#dcg"><tt>dcg</tt></a>, <a class="lpdoc-idx-anchor" id="386" href="codesearch.html#dcg/dcg_phrase"><tt>dcg/dcg_phrase</tt></a>, <a class="lpdoc-idx-anchor" id="387" href="codesearch.html#dynamic"><tt>dynamic</tt></a>, <a class="lpdoc-idx-anchor" id="388" href="codesearch.html#datafacts"><tt>datafacts</tt></a>, <a class="lpdoc-idx-anchor" id="389" href="codesearch.html#assertions"><tt>assertions</tt></a>, <a class="lpdoc-idx-anchor" id="390" href="codesearch.html#assertions/assertions_basic"><tt>assertions/assertions_basic</tt></a>, <a class="lpdoc-idx-anchor" id="391" href="codesearch.html#regtypes"><tt>regtypes</tt></a>.
+</ul></div><div class="lpdoc-footer">Generated with LPdoc using Ciao</div></div><div class="lpdoc-clearer"></div></div></body></html>
